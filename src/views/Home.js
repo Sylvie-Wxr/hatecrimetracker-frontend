@@ -75,6 +75,7 @@ const Home = () => {
   const [incidentAggregated, setIncidentAggregated] = useState([]);
   const [loading, setLoading] = useState(false);
   const [isShare, setIsShare] = useState(false);
+  const [showSelfReportIncidents, setShowSelfReportIncidents] = useState(false);
   const setSelectedLang = (lang_code) => {
     setCookie("lang", lang_code);
     setSelectedLangCode(lang_code);
@@ -91,7 +92,15 @@ const Home = () => {
     const strEndDate = end.format("YYYY-MM-DD");
     while (start <= end) {
       const strDate = start.format("YYYY-MM-DD");
-      const monthlyData = monthly[start.format("YYYY-MM")];
+      const monthlyRaw = monthly[start.format("YYYY-MM")];
+      // Handle both new monthly format {news: X, self_report: Y} and old format (number)
+      const monthlyData = monthlyRaw 
+        ? (typeof monthlyRaw === 'object' && monthlyRaw.news !== undefined
+           ? (showSelfReportIncidents 
+              ? (monthlyRaw.news || 0) + (monthlyRaw.self_report || 0)
+              : (monthlyRaw.news || 0))
+           : monthlyRaw)  // Fallback to old format (simple number)
+        : 0;
       if (stats.length > 0) {
         if (
           stats[stats.length - 1].key < strStartDate ||
@@ -102,9 +111,21 @@ const Home = () => {
         }
         if (stats[stats.length - 1].key == strDate) {
           //found the date in stats, use it
+          const statsItem = stats[stats.length - 1];
+          // Handle both new format {news: X, self_report: Y} and old format {value: Z}
+          const value = statsItem.news !== undefined 
+            ? (showSelfReportIncidents 
+               ? (statsItem.news || 0) + (statsItem.self_report || 0)
+               : (statsItem.news || 0))
+            : (statsItem.value || 0);  // Fallback to old format
+          
           new_stats.push({
             monthly_cases: monthlyData,
-            ...stats[stats.length - 1],
+            key: statsItem.key,
+            value: value,
+            // Keep original data for potential chart enhancement
+            news: statsItem.news || 0,
+            self_report: statsItem.self_report || 0
           });
           stats.pop();
           continue;
@@ -120,10 +141,10 @@ const Home = () => {
 
     setLoading(true);
     incidentsService
-      .getIncidents(dateRange[0], dateRange[1], selectedState, selectedLangCode, null, "news")
+      .getIncidents(dateRange[0], dateRange[1], selectedState, selectedLangCode, showSelfReportIncidents)
       .then((incidents) => setIncidents(incidents));
     incidentsService
-      .getStats(dateRange[0], dateRange[1], selectedState)
+      .getStats(dateRange[0], dateRange[1], selectedState, showSelfReportIncidents)
       .then((stats) => {
         setIncidentTimeSeries(
           mergeDate(
@@ -204,7 +225,7 @@ const Home = () => {
   useEffect(() => {
     loadData(true);
     saveHistory();
-  }, [dateRange]);
+  }, [dateRange, selectedState, selectedLangCode, showSelfReportIncidents]);
 
   useEffect(() => {
     const resizeW = () => changeDeviceSize(window.innerWidth);
@@ -228,6 +249,10 @@ const Home = () => {
   const stateToggled = (state) => {
     const newState = state == selectedState ? null : state;
     setSelectedState(newState);
+  };
+
+  const handleToggleSelfReportIncidents = (checked) => {
+    setShowSelfReportIncidents(checked);
   };
 
   return (
@@ -338,11 +363,22 @@ const Home = () => {
           <Row className="match-height">
             <Col xl="8" lg="6" md="12">
               <div>
+              <div className="self-reports-toggle">
+                <label>
+                  <input 
+                    type="checkbox" 
+                    checked={showSelfReportIncidents}
+                    onChange={(e) => handleToggleSelfReportIncidents(e.target.checked)}
+                  />
+                  Show Self-report incidents
+                </label>
+              </div>
                 <IncidentChart_AM
                   color={colors.primary.main}
                   chart_data={incidentTimeSeries}
                   state={selectedState}
                   isFirstLoadData={isFirstLoadData}
+                  showSelfReportIncidents={showSelfReportIncidents}
                 />
 
                 <IncidentMap
