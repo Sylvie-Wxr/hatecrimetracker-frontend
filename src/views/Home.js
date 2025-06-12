@@ -127,13 +127,23 @@ const Home = () => {
             value: value,
             // Keep original data for potential chart enhancement
             news: statsItem.news || 0,
-            self_report: statsItem.self_report || 0
+            self_report: statsItem.self_report || 0,
+            daily_news: statsItem.news || 0,  // NEW
+            daily_self_report: statsItem.self_report || 0
           });
           stats.pop();
           continue;
         }
       }
-      new_stats.push({ key: strDate, value: null, monthly_cases: monthlyData });
+      new_stats.push({ 
+        key: strDate, 
+        value: null, 
+        monthly_cases: monthlyData,
+        news: 0,
+        self_report: 0,
+        daily_news: 0, 
+        daily_self_report: 0
+       });
       start.add(1, "days");
     }
     return new_stats;
@@ -148,14 +158,21 @@ const Home = () => {
     incidentsService
       .getStats(dateRange[0], dateRange[1], selectedState, showSelfReportIncidents)
       .then((stats) => {
-        setIncidentTimeSeries(
-          mergeDate(
-            stats.stats,
-            dateRange[0],
-            dateRange[1],
-            stats.monthly_stats
-          )
+        if (viewMode === 'monthly') {
+        const monthlyChartData = Object.entries(stats.monthly_stats || {}).map(
+          ([month, values]) => ({
+            key: `${month}-01`, // e.g. "2024-06-01"
+            news: values.news || 0,
+            self_report: values.self_report || 0,
+            value: (values.news || 0) + (values.self_report || 0),
+          })
         );
+        setIncidentTimeSeries(monthlyChartData);
+      } else {
+        setIncidentTimeSeries(
+          mergeDate(stats.stats, dateRange[0], dateRange[1], stats.monthly_stats)
+        );
+      }
         if (updateMap) {
           setIncidentAggregated(stats.total);
         }
@@ -227,7 +244,7 @@ const Home = () => {
   useEffect(() => {
     loadData(true);
     saveHistory();
-  }, [dateRange, selectedState, selectedLangCode, showSelfReportIncidents]);
+  }, [dateRange, selectedState, selectedLangCode, showSelfReportIncidents, viewMode,]);
 
   useEffect(() => {
     const resizeW = () => changeDeviceSize(window.innerWidth);

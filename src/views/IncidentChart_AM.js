@@ -38,13 +38,14 @@ const IncidentChart_AM = ({ color, chart_data, state, isFirstLoadData, viewMode 
     dateAxis.renderer.grid.template.strokeWidth = 1;
     dateAxis.renderer.grid.template.strokeOpacity = 0.2;
     dateAxis.renderer.grid.template.strokeDasharray = "3,3";
+    dateAxis.renderer.grid.template.location = 0.5;
     dateAxis.dateFormats.setKey("day", "MM/yyyy");
     dateAxis.periodChangeDateFormats.setKey("day", "MM/yyyy");
     dateAxis.dateFormats.setKey("week", "MM/yyyy");
     dateAxis.periodChangeDateFormats.setKey("week", "MM/yyyy");
     dateAxis.dateFormats.setKey("month", "MM/yyyy");
     dateAxis.periodChangeDateFormats.setKey("month", "MM/yyyy");
-    dateAxis.renderer.minGridDistance = 50;
+    dateAxis.renderer.minGridDistance = 70;
 
     let valueAxis = chart.yAxes.push(new am4charts.ValueAxis());
     valueAxis.title.text = "Case Count";
@@ -59,36 +60,53 @@ const IncidentChart_AM = ({ color, chart_data, state, isFirstLoadData, viewMode 
     // let toolTipText = `{key}
     //     [bold]Monthly Cases: {monthly_cases}
     //     [bold]Daily Cases: {value}`;
-
-    // Create series (the data sets) - always create both but handle visibility
-    let series1, series2;
     
-    // Monthly series (line chart) - always create
-    series1 = chart.series.push(new am4charts.LineSeries());
-    series1.dataFields.valueY = "monthly_cases";
-    series1.dataFields.dateX = "key";
-    series1.name = "Monthly Cases";
-    series1.tooltipText = `{key}
-        [bold]Monthly Cases: {monthly_cases}`;
-    series1.yAxis = valueAxis;
-    series1.fillOpacity = 0.4;
-    // Set visibility based on viewMode
-    series1.hidden = viewMode === 'daily';
+    // Monthly mode – stacked bars: News (gray) + Self-report (yellow)
+    const newsSeries = chart.series.push(new am4charts.ColumnSeries());
+    newsSeries.dataFields.valueY = "news";
+    newsSeries.dataFields.dateX = "key";
+    newsSeries.name = "News Reports";
+    newsSeries.fill = am4core.color("#b0b0b0");
+    newsSeries.stroke = am4core.color("#b0b0b0");
+    newsSeries.columns.template.width = am4core.percent(50);
+    newsSeries.stacked = true;
+    newsSeries.hidden = viewMode === 'daily';
+    const selfReportSeries = chart.series.push(new am4charts.ColumnSeries());
+    selfReportSeries.dataFields.valueY = "self_report";
+    selfReportSeries.dataFields.dateX = "key";
+    selfReportSeries.name = "Self-reported";
+    selfReportSeries.fill = am4core.color("#cc804d");
+    selfReportSeries.stroke = am4core.color("#cc804d");
+    selfReportSeries.columns.template.width = am4core.percent(50);
+    selfReportSeries.stacked = true;
+    selfReportSeries.hidden = viewMode === 'daily';
 
-    // Daily series (column chart) - always create
-    series2 = chart.series.push(new am4charts.ColumnSeries());
-    series2.dataFields.valueY = "value";
-    series2.dataFields.dateX = "key";
-    series2.name = "Daily Cases";
-    series2.columns.template.tooltipText = `{key}
-        [bold]Daily Cases: {value}`;
-    chart.tooltip.label.fill = am4core.color("#f00");
-    series2.clustered = true;
-    series2.fill = am4core.color(color);
-    series2.stroke = am4core.color(color);
-    series2.columns.template.width = am4core.percent(80);
-    // Set visibility based on viewMode  
-    series2.hidden = viewMode === 'monthly';
+    // Daily: News Reports
+    const dailyNewsSeries = chart.series.push(new am4charts.ColumnSeries());
+    dailyNewsSeries.dataFields.valueY = "daily_news";
+    dailyNewsSeries.dataFields.dateX = "key";
+    dailyNewsSeries.name = "News Reports";
+    dailyNewsSeries.fill = am4core.color("#FEF753");
+    dailyNewsSeries.stroke = am4core.color("#FEF753");
+    dailyNewsSeries.columns.template.tooltipText = `{key}
+    [bold]News Reports: {daily_news}`;
+    dailyNewsSeries.columns.template.width = am4core.percent(80);
+    dailyNewsSeries.stacked = true;
+    dailyNewsSeries.hidden = viewMode === 'monthly';
+
+    // Daily: Self-reported
+    const dailySelfReportSeries = chart.series.push(new am4charts.ColumnSeries());
+    dailySelfReportSeries.dataFields.valueY = "daily_self_report";
+    dailySelfReportSeries.dataFields.dateX = "key";
+    dailySelfReportSeries.name = "Self-reported";
+    dailySelfReportSeries.fill = am4core.color("#cc804d");
+    dailySelfReportSeries.stroke = am4core.color("#cc804d");
+    dailySelfReportSeries.columns.template.tooltipText = `{key}
+    [bold]Self-reported: {daily_self_report}`;
+    dailySelfReportSeries.columns.template.width = am4core.percent(80);
+    dailySelfReportSeries.stacked = true;
+    dailySelfReportSeries.hidden = viewMode === 'monthly';
+
 
     // chart cursor on
     chart.cursor = new am4charts.XYCursor();
