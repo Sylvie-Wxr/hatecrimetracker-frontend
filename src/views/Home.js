@@ -76,6 +76,7 @@ const Home = () => {
   const [loading, setLoading] = useState(false);
   const [isShare, setIsShare] = useState(false);
   const [showSelfReportIncidents, setShowSelfReportIncidents] = useState(false);
+  const [viewMode, setViewMode] = useState('daily');
   const setSelectedLang = (lang_code) => {
     setCookie("lang", lang_code);
     setSelectedLangCode(lang_code);
@@ -255,6 +256,10 @@ const Home = () => {
     setShowSelfReportIncidents(checked);
   };
 
+  const handleViewModeChange = (mode) => {
+    setViewMode(mode);
+  };
+
   return (
     <>
       {deviceSize < 786 && (
@@ -379,6 +384,8 @@ const Home = () => {
                   state={selectedState}
                   isFirstLoadData={isFirstLoadData}
                   showSelfReportIncidents={showSelfReportIncidents}
+                  viewMode={viewMode}
+                  onViewModeChange={handleViewModeChange}
                 />
 
                 <IncidentMap

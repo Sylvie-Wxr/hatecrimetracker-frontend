@@ -16,14 +16,10 @@ Example comes from here
 https://www.amcharts.com/docs/v4/getting-started/integrations/using-react/
 */
 
-const togDaily = false,
-  togMonthly = false;
 //chartData is result from ___
-const IncidentChart_AM = ({ color, chart_data, state, isFirstLoadData }) => {
+const IncidentChart_AM = ({ color, chart_data, state, isFirstLoadData, viewMode = 'daily', onViewModeChange }) => {
   const { t } = useTranslation();
   const [totalCases, setTotalCases] = useState(0);
-  let toggleDaily = togDaily,
-    toggleMonthly = togMonthly;
 
   useLayoutEffect(() => {
     let total = 0;
@@ -63,8 +59,11 @@ const IncidentChart_AM = ({ color, chart_data, state, isFirstLoadData }) => {
         [bold]Monthly Cases: {monthly_cases}
         [bold]Daily Cases: {value}`;
 
-    // Create series (the data sets)
-    let series1 = chart.series.push(new am4charts.LineSeries());
+    // Create series (the data sets) - always create both but handle visibility
+    let series1, series2;
+    
+    // Monthly series (line chart) - always create
+    series1 = chart.series.push(new am4charts.LineSeries());
     series1.dataFields.valueY = "monthly_cases";
     series1.dataFields.dateX = "key";
     series1.name = "Monthly Cases";
@@ -72,12 +71,14 @@ const IncidentChart_AM = ({ color, chart_data, state, isFirstLoadData }) => {
         [bold]Monthly Cases: {monthly_cases}`;
     series1.yAxis = valueAxis;
     series1.fillOpacity = 0.4;
+    // Set visibility based on viewMode
+    series1.hidden = viewMode === 'daily';
 
-    let series2 = chart.series.push(new am4charts.ColumnSeries());
+    // Daily series (column chart) - always create
+    series2 = chart.series.push(new am4charts.ColumnSeries());
     series2.dataFields.valueY = "value";
     series2.dataFields.dateX = "key";
     series2.name = "Daily Cases";
-    // series2.tooltipText = toolTipText;
     series2.columns.template.tooltipText = `{key}
         [bold]Daily Cases: {value}`;
     chart.tooltip.label.fill = am4core.color("#f00");
@@ -85,6 +86,8 @@ const IncidentChart_AM = ({ color, chart_data, state, isFirstLoadData }) => {
     series2.fill = am4core.color(color);
     series2.stroke = am4core.color(color);
     series2.columns.template.width = am4core.percent(80);
+    // Set visibility based on viewMode  
+    series2.hidden = viewMode === 'monthly';
 
     // chart cursor on
     chart.cursor = new am4charts.XYCursor();
@@ -98,13 +101,32 @@ const IncidentChart_AM = ({ color, chart_data, state, isFirstLoadData }) => {
     markerTemplate.children.getIndex(0).cornerRadius(0.5, 0.5, 0.5, 0.5);
     markerTemplate.width = 12;
     markerTemplate.height = 12;
+    
+    // Set legend text for both series
     series1.legendSettings.labelText = "Monthly Cases [bold {color}]{value}[/]";
     series2.legendSettings.labelText = "Daily Cases [bold {color}]{value}[/]";
+    
+    // Add click handlers to legend items for toggling view mode
+    chart.legend.itemContainers.template.clickable = true;
+    chart.legend.itemContainers.template.focusable = true;
+    chart.legend.itemContainers.template.cursorOverStyle = am4core.MouseCursorStyle.pointer;
+    
+    // Handle legend clicks
+    chart.legend.itemContainers.template.events.on("hit", function(ev) {
+      const clickedItem = ev.target.dataItem.dataContext;
+      if (onViewModeChange) {
+        if (clickedItem.name === "Monthly Cases") {
+          onViewModeChange('monthly');
+        } else if (clickedItem.name === "Daily Cases") {
+          onViewModeChange('daily');
+        }
+      }
+    });
 
     return () => {
       chart.dispose();
     };
-  }, [chart_data]);
+  }, [chart_data, viewMode]);
 
   return (
     <div>
