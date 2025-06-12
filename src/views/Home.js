@@ -370,11 +370,11 @@ const Home = () => {
             <Col xl="8" lg="6" md="12">
               <div>
                 <div className="toggle-wrapper">
-              <SelfReportToggle
-  isOn={showSelfReportIncidents}
-  handleToggle={handleToggleSelfReportIncidents}
-/>
-</div>
+                  <SelfReportToggle
+                    isOn={showSelfReportIncidents}
+                    handleToggle={handleToggleSelfReportIncidents}
+                  />
+              </div>
                 <IncidentChart_AM
                   color={colors.primary.main}
                   chart_data={incidentTimeSeries}

@@ -7,6 +7,7 @@ import React, { useEffect, useLayoutEffect, useState, useContext } from "react";
 import { stateFullName } from "../utility/Utils";
 import { useTranslation } from "react-i18next";
 import { Trans } from "react-i18next";
+import "./IncidentChart_AM.css"; 
 import { th } from "date-fns/locale";
 
 am4core.useTheme(am4themes_animated);
@@ -55,9 +56,9 @@ const IncidentChart_AM = ({ color, chart_data, state, isFirstLoadData, viewMode 
     valueAxis.renderer.grid.template.strokeDasharray = "3,3";
 
     // Setting up toolTipText
-    let toolTipText = `{key}
-        [bold]Monthly Cases: {monthly_cases}
-        [bold]Daily Cases: {value}`;
+    // let toolTipText = `{key}
+    //     [bold]Monthly Cases: {monthly_cases}
+    //     [bold]Daily Cases: {value}`;
 
     // Create series (the data sets) - always create both but handle visibility
     let series1, series2;
@@ -93,35 +94,6 @@ const IncidentChart_AM = ({ color, chart_data, state, isFirstLoadData, viewMode 
     chart.cursor = new am4charts.XYCursor();
     chart.cursor.lineX.disabled = false;
     chart.cursor.lineY.disabled = false;
-
-    // chart legend
-    chart.legend = new am4charts.Legend();
-    chart.legend.useDefaultMarker = false;
-    let markerTemplate = chart.legend.markers.template;
-    markerTemplate.children.getIndex(0).cornerRadius(0.5, 0.5, 0.5, 0.5);
-    markerTemplate.width = 12;
-    markerTemplate.height = 12;
-    
-    // Set legend text for both series
-    series1.legendSettings.labelText = "Monthly Cases [bold {color}]{value}[/]";
-    series2.legendSettings.labelText = "Daily Cases [bold {color}]{value}[/]";
-    
-    // Add click handlers to legend items for toggling view mode
-    chart.legend.itemContainers.template.clickable = true;
-    chart.legend.itemContainers.template.focusable = true;
-    chart.legend.itemContainers.template.cursorOverStyle = am4core.MouseCursorStyle.pointer;
-    
-    // Handle legend clicks
-    chart.legend.itemContainers.template.events.on("hit", function(ev) {
-      const clickedItem = ev.target.dataItem.dataContext;
-      if (onViewModeChange) {
-        if (clickedItem.name === "Monthly Cases") {
-          onViewModeChange('monthly');
-        } else if (clickedItem.name === "Daily Cases") {
-          onViewModeChange('daily');
-        }
-      }
-    });
 
     return () => {
       chart.dispose();
@@ -166,6 +138,30 @@ const IncidentChart_AM = ({ color, chart_data, state, isFirstLoadData, viewMode 
               id="chart_1yaxis"
               style={{ width: "100%", height: "400px" }}
             ></div>
+          </div>
+          <div className="time-range-toggle">
+            <div
+              className="time-option"
+              onClick={() => onViewModeChange("monthly")}
+            >
+              <div className={`time-circle-outer ${viewMode === "monthly" ? "active" : ""}`}>
+                {viewMode === "monthly" && <div className="time-circle-inner" />}
+              </div>
+              <span className={viewMode === "monthly" ? "active-label" : "inactive-label"}>
+                Monthly
+              </span>
+            </div>
+            <div
+              className="time-option"
+              onClick={() => onViewModeChange("daily")}
+            >
+              <div className={`time-circle-outer ${viewMode === "daily" ? "active" : ""}`}>
+                {viewMode === "daily" && <div className="time-circle-inner" />}
+              </div>
+              <span className={viewMode === "daily" ? "active-label" : "inactive-label"}>
+                Daily
+              </span>
+            </div>
           </div>
         </CardBody>
       </Card>
