@@ -19,6 +19,7 @@ import IncidentCountTable from "./IncidentCountTable";
 import IncidentList from "./IncidentList";
 import IncidentMap from "./IncidentMap";
 import StateSelection from "./StateSelection";
+import SelfReportToggle from "./SelfReportToggle";
 import { useLocation, useNavigate } from "react-router-dom";
 import { getValidState, isObjEmpty } from "../utility/Utils";
 import { useCookies } from "react-cookie";
@@ -76,7 +77,7 @@ const Home = () => {
   const [loading, setLoading] = useState(false);
   const [isShare, setIsShare] = useState(false);
   const [showSelfReportIncidents, setShowSelfReportIncidents] = useState(false);
-  const [viewMode, setViewMode] = useState('daily');
+  const [viewMode, setViewMode] = useState('monthly');
   const setSelectedLang = (lang_code) => {
     setCookie("lang", lang_code);
     setSelectedLangCode(lang_code);
@@ -368,16 +369,12 @@ const Home = () => {
           <Row className="match-height">
             <Col xl="8" lg="6" md="12">
               <div>
-              <div className="self-reports-toggle">
-                <label>
-                  <input 
-                    type="checkbox" 
-                    checked={showSelfReportIncidents}
-                    onChange={(e) => handleToggleSelfReportIncidents(e.target.checked)}
-                  />
-                  Show Self-report incidents
-                </label>
-              </div>
+                <div className="toggle-wrapper">
+              <SelfReportToggle
+  isOn={showSelfReportIncidents}
+  handleToggle={handleToggleSelfReportIncidents}
+/>
+</div>
                 <IncidentChart_AM
                   color={colors.primary.main}
                   chart_data={incidentTimeSeries}
