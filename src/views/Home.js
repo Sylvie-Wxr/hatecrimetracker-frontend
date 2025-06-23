@@ -112,17 +112,24 @@ const Home = () => {
       // Find the current date stats 
       const dailyStat = statsMap[strDate]
       if (dailyStat) {
-        let dailyValue;
+        // Handle both old and new daily stat formats
+        let dailyNews = 0;
+        let dailySelfReport = 0;
+        
         if (dailyStat.value !== undefined) {
-          dailyValue = dailyStat.value;
+          // Old format: { key: "2024-12-26", value: 2 }
+          dailyNews = dailyStat.value;
         } else {
-          dailyValue = dailyStat.news || 0;
+          // New format: { key: "2024-12-26", news: 1, self_report: 1 }
+          dailyNews = dailyStat.news || 0;
+          dailySelfReport = dailyStat.self_report || 0;
         }
+        
         new_stats.push({
           key: strDate,
-          value: dailyValue > 0 ? dailyValue : null,
-          news: dailyStat.news || 0,
-          self_report: dailyStat.self_report || 0,
+          value: dailyNews > 0 ? dailyNews : null, // Only show news data for current behavior
+          news: dailyNews,
+          self_report: dailySelfReport,
           monthly_cases: monthlyNews,
           monthly_news: monthlyNews,
           monthly_self_report: monthlySelfReport,
@@ -152,17 +159,35 @@ const Home = () => {
       .then((incidents) => setIncidents(incidents));
     incidentsService
       .getStats(dateRange[0], dateRange[1], selectedState)
-      .then((stats) => {
+      .then((response) => {
+        // Handle both old and new field names
+        const dailyStats = response.daily_statistics || response.stats || [];
+        const monthlyStats = response.monthly_statistics || response.monthly_stats || {};
+        const totalStats = response.insight || response.total || {};
+        
         setIncidentTimeSeries(
           mergeDate(
-            stats.stats,
+            dailyStats,
             dateRange[0],
             dateRange[1],
-            stats.monthly_stats
+            monthlyStats
           )
         );
         if (updateMap) {
-          setIncidentAggregated(stats.total);
+          // Convert new format objects to numbers for map/table compatibility
+          const processedTotalStats = {};
+          Object.entries(totalStats).forEach(([state, value]) => {
+            if (typeof value === "object" && value !== null) {
+              // New format: { news: 30, self_report: 34 } -> use news only
+              processedTotalStats[state] = value.news || 0;
+            } else if (typeof value === "number") {
+              // Old format: just a number
+              processedTotalStats[state] = value;
+            } else {
+              processedTotalStats[state] = 0;
+            }
+          });
+          setIncidentAggregated(processedTotalStats);
         }
         setLoading(false);
         setIsFirstLoadData(false);
