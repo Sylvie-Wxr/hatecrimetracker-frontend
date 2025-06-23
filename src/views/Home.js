@@ -165,14 +165,26 @@ const Home = () => {
         const monthlyStats = response.monthly_statistics || response.monthly_stats || {};
         const totalStats = response.insight || response.total || {};
         
-        setIncidentTimeSeries(
-          mergeDate(
-            dailyStats,
-            dateRange[0],
-            dateRange[1],
-            monthlyStats
-          )
+        const rawTimeSeries = mergeDate(
+          dailyStats,
+          dateRange[0],
+          dateRange[1],
+          monthlyStats
         );
+        
+        // Normalize the data
+        const processedData = rawTimeSeries.map(d => {
+          const news = d.news || d.value || 0;
+          const self_report = d.self_report || 0;
+          return {
+            ...d,
+            news,
+            self_report,
+            value: news  // current only show news
+          };
+        });
+        console.log("✅ Processed Time Series Data:", processedData);
+        setIncidentTimeSeries(processedData);
         if (updateMap) {
           // Convert new format objects to numbers for map/table compatibility
           const processedTotalStats = {};
