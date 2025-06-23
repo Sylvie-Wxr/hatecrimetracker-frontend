@@ -84,10 +84,26 @@ const Home = () => {
   // Remove date out of the range, and insert days that does not have data
   // start_date, end_date: Date
   // monthly: monthly aggregation { first_day_of_month: count_of_the_month }
-  const mergeDate = (stats, start_date, end_date, monthly) => {
+  const mergeDate = (statsInput, start_date, end_date, monthly) => {
     const new_stats = [];
     let start = moment(start_date);
     const end = moment(end_date);
+    
+    // Handle both old and new API formats for daily statistics
+    let stats = [];
+    if (Array.isArray(statsInput)) {
+      // Old format: already an array
+      stats = statsInput;
+    } else if (typeof statsInput === 'object' && statsInput !== null) {
+      // New format: object with dates as keys
+      stats = Object.entries(statsInput).map(([key, value]) => ({
+        key,
+        news: value.news || 0,
+        self_report: value.self_report || 0,
+        value: value.news || 0 // For backward compatibility, use news as value
+      }));
+    }
+    
     // Convert stats object to a map for lookup
     const statsMap = {}
     stats.forEach(stat => {
