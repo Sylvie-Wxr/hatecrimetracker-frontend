@@ -88,34 +88,61 @@ const Home = () => {
     const new_stats = [];
     let start = moment(start_date);
     const end = moment(end_date);
-    const strStartDate = start.format("YYYY-MM-DD");
-    const strEndDate = end.format("YYYY-MM-DD");
+    // Convert stats object to a map for lookup
+    const statsMap = {}
+    stats.forEach(stat => {
+      statsMap[stat.key] = stat;
+    })
     while (start <= end) {
       const strDate = start.format("YYYY-MM-DD");
-      const monthlyData = monthly[start.format("YYYY-MM")];
-      if (stats.length > 0) {
-        if (
-          stats[stats.length - 1].key < strStartDate ||
-          stats[stats.length - 1].key > strEndDate
-        ) {
-          stats.pop();
-          continue; //skip data that is out of range
-        }
-        if (stats[stats.length - 1].key == strDate) {
-          //found the date in stats, use it
-          new_stats.push({
-            monthly_cases: monthlyData,
-            ...stats[stats.length - 1],
-          });
-          stats.pop();
-          continue;
-        }
+      const monthKey = start.format("YYYY-MM");
+      const monthlyRaw = monthly[monthKey];
+
+      // Handle both old format (numbers) and new format (objects)
+      let monthlyNews = 0;
+      let monthlySelfReport = 0;
+      if (typeof monthlyRaw === "object" && monthlyRaw !== null) {
+        monthlyNews = monthlyRaw.news || 0;
+        monthlySelfReport = monthlyRaw.self_report || 0;
+      } else if (typeof monthlyRaw === "number") {
+        monthlyNews = monthlyRaw;
+        monthlySelfReport = 0;
       }
-      new_stats.push({ key: strDate, value: null, monthly_cases: monthlyData });
+
+      // Find the current date stats 
+      const dailyStat = statsMap[strDate]
+      if (dailyStat) {
+        let dailyValue;
+        if (dailyStat.value !== undefined) {
+          dailyValue = dailyStat.value;
+        } else {
+          dailyValue = dailyStat.news || 0;
+        }
+        new_stats.push({
+          key: strDate,
+          value: dailyValue > 0 ? dailyValue : null,
+          news: dailyStat.news || 0,
+          self_report: dailyStat.self_report || 0,
+          monthly_cases: monthlyNews,
+          monthly_news: monthlyNews,
+          monthly_self_report: monthlySelfReport,
+        });
+      } else {
+        new_stats.push({
+          key: strDate,
+          value: null,
+          news: 0,
+          self_report: 0,
+          monthly_cases: monthlyNews,
+          monthly_news: monthlyNews,
+          monthly_self_report: monthlySelfReport,
+        });
+      }
       start.add(1, "days");
     }
     return new_stats;
   };
+  
   const loadData = (updateMap = false) => {
     if (dateRange?.length != 2) return;
 
