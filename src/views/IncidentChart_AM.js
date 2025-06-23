@@ -25,8 +25,6 @@ const IncidentChart_AM = ({ color, chart_data, state, isFirstLoadData }) => {
   const { t } = useTranslation();
   const [totalCases, setTotalCases] = useState(0);
   const [viewMode, setViewMode] = useState("monthly");
-  let toggleDaily = togDaily,
-    toggleMonthly = togMonthly;
 
   useLayoutEffect(() => {
     let total = 0;
@@ -35,24 +33,68 @@ const IncidentChart_AM = ({ color, chart_data, state, isFirstLoadData }) => {
     }
     setTotalCases(total);
 
+    // Filter data based on view mode
+    let filteredData = chart_data;
+    if (viewMode === "monthly") {
+      // For monthly view, aggregate data by month and create proper monthly data points
+      const monthlyDataMap = new Map();
+      
+      chart_data.forEach(item => {
+        const date = new Date(item.key);
+        const monthKey = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}`;
+        const firstOfMonth = `${monthKey}-01`;
+        
+        if (!monthlyDataMap.has(firstOfMonth)) {
+          monthlyDataMap.set(firstOfMonth, {
+            key: firstOfMonth,
+            monthly_cases: item.monthly_cases || 0,
+            value: item.monthly_cases || 0, // Use monthly_cases for value too
+            news_reports: item.news_reports || 0,
+            self_reported: item.self_reported || 0
+          });
+        }
+      });
+      
+      filteredData = Array.from(monthlyDataMap.values()).sort((a, b) => a.key.localeCompare(b.key));
+    }
+
     // Create chart instance
     let chart = am4core.create("chart_1yaxis", am4charts.XYChart);
     chart.logo.disabled = true;
-    chart.data = chart_data;
+    chart.data = filteredData;
     // Create date axes and value axes
     let dateAxis = chart.xAxes.push(new am4charts.DateAxis());
     dateAxis.renderer.grid.template.stroke = "white";
     dateAxis.renderer.grid.template.strokeWidth = 1;
     dateAxis.renderer.grid.template.strokeOpacity = 0.2;
     dateAxis.renderer.grid.template.strokeDasharray = "3,3";
-    dateAxis.dateFormats.setKey("day", "MM/yyyy");
-    dateAxis.periodChangeDateFormats.setKey("day", "MM/yyyy");
-    dateAxis.dateFormats.setKey("week", "MM/yyyy");
-    dateAxis.periodChangeDateFormats.setKey("week", "MM/yyyy");
-    dateAxis.dateFormats.setKey("month", "MM/yyyy");
-    dateAxis.periodChangeDateFormats.setKey("month", "MM/yyyy");
-    dateAxis.renderer.minGridDistance = 50;
-
+    
+    if (viewMode === "monthly") {
+      dateAxis.baseInterval = { timeUnit: "month", count: 1 };
+      dateAxis.renderer.minGridDistance = 80; // Increase to control skipping more predictably
+      dateAxis.dateFormats.setKey("month", "MM/yyyy");
+      dateAxis.periodChangeDateFormats.setKey("month", "MM/yyyy");
+      // Use different alignment approach for better consistency
+      dateAxis.renderer.grid.template.location = 0;
+      dateAxis.renderer.cellStartLocation = 0;
+      dateAxis.renderer.cellEndLocation = 1;
+      // Ensure labels are centered under bars
+      dateAxis.renderer.labels.template.horizontalCenter = "middle";
+    } else {
+      dateAxis.baseInterval = { timeUnit: "day", count: 1 };
+      dateAxis.renderer.minGridDistance = 70;
+      dateAxis.dateFormats.setKey("day", "MM/yyyy");
+      dateAxis.periodChangeDateFormats.setKey("day", "MM/yyyy");
+      dateAxis.dateFormats.setKey("week", "MM/yyyy");
+      dateAxis.periodChangeDateFormats.setKey("week", "MM/yyyy");
+      dateAxis.dateFormats.setKey("month", "MM/yyyy");
+      dateAxis.periodChangeDateFormats.setKey("month", "MM/yyyy");
+      // Standard grid positioning for daily
+      dateAxis.renderer.grid.template.location = 0;
+      dateAxis.renderer.cellStartLocation = 0.1;
+      dateAxis.renderer.cellEndLocation = 0.9;
+    }
+    
     let valueAxis = chart.yAxes.push(new am4charts.ValueAxis());
     valueAxis.title.text = "Case Count";
     valueAxis.min = 0;
@@ -62,32 +104,31 @@ const IncidentChart_AM = ({ color, chart_data, state, isFirstLoadData }) => {
     valueAxis.renderer.grid.template.strokeOpacity = 0.2;
     valueAxis.renderer.grid.template.strokeDasharray = "3,3";
 
-    // Create series (the data sets)
-    let series1 = chart.series.push(new am4charts.LineSeries());
-    series1.dataFields.valueY = "monthly_cases";
-    series1.dataFields.dateX = "key";
-    series1.name = "Monthly Cases";
-    series1.tooltipText = `{key}
+    // Monthly series
+    const monthlySeries = chart.series.push(new am4charts.ColumnSeries());
+    monthlySeries.dataFields.valueY = "monthly_cases";
+    monthlySeries.dataFields.dateX = "key";
+    monthlySeries.name = "Monthly Cases";
+    monthlySeries.fill = am4core.color("#7B68EE");
+    monthlySeries.stroke = am4core.color("#7B68EE");
+    monthlySeries.columns.template.width = am4core.percent(50);
+    monthlySeries.columns.template.tooltipText = `{key}
         [bold]Monthly Cases: {monthly_cases}`;
-    series1.yAxis = valueAxis;
-    series1.fillOpacity = 0.4;
+    monthlySeries.stacked = true;
+    monthlySeries.hidden = viewMode === 'daily';
 
-    let series2 = chart.series.push(new am4charts.ColumnSeries());
-    series2.dataFields.valueY = "value";
-    series2.dataFields.dateX = "key";
-    series2.name = "Daily Cases";
-    // series2.tooltipText = toolTipText;
-    series2.columns.template.tooltipText = `{key}
+    // Daily series
+    const dailySeries = chart.series.push(new am4charts.ColumnSeries());
+    dailySeries.dataFields.valueY = "value";
+    dailySeries.dataFields.dateX = "key";
+    dailySeries.name = "Daily Cases";
+    dailySeries.fill = am4core.color(color);
+    dailySeries.stroke = am4core.color(color);
+    dailySeries.columns.template.tooltipText = `{key}
         [bold]Daily Cases: {value}`;
-    chart.tooltip.label.fill = am4core.color("#f00");
-    series2.clustered = true;
-    series2.fill = am4core.color(color);
-    series2.stroke = am4core.color(color);
-    series2.columns.template.width = am4core.percent(80);
-
-    // Show/hide based on viewMode
-    series1.hidden = viewMode !== "monthly";
-    series2.hidden = viewMode !== "daily";
+    dailySeries.columns.template.width = am4core.percent(80);
+    dailySeries.stacked = true;
+    dailySeries.hidden = viewMode === 'monthly';
 
     // chart cursor on
     chart.cursor = new am4charts.XYCursor();

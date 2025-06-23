@@ -178,12 +178,12 @@ const Home = () => {
           const self_report = d.self_report || 0;
           return {
             ...d,
-            news,
-            self_report,
+            news_reports: news,
+            self_reported: self_report,
             value: news  // current only show news
           };
         });
-        console.log("✅ Processed Time Series Data:", processedData);
+      
         setIncidentTimeSeries(processedData);
         if (updateMap) {
           // Convert new format objects to numbers for map/table compatibility
