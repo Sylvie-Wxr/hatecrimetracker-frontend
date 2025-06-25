@@ -345,7 +345,10 @@ const Home = () => {
                 {/* Trend Label + Chart */}
                 <Row className="align-items-start mb-2">
                   <Col xs="2" className="text-end pe-2">
+                    <div>
                     <div className="geo-label">Geography</div>
+                    <div id="map-legend-container" className="map-legend mt-2" />
+                    </div>
                   </Col>
                   <Col>
                     <IncidentMap

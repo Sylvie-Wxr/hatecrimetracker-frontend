@@ -222,7 +222,14 @@ const IncidentMap = (props) => {
         let polygonSeries = map.series.push(new am4maps.MapPolygonSeries())
 
         let legend = new am4maps.Legend();
-        legend.parent = map.chartContainer;
+        let legendContainer = am4core.create("map-legend-container", am4core.Container);
+        legendContainer.logo.disabled = true;
+        legendContainer.layout = "vertical";
+        legendContainer.padding(0, 0, 0, 0);
+        legendContainer.width = am4core.percent(100);
+        legendContainer.background.fillOpacity = 0; // transparent
+        legend.parent = legendContainer;
+
         setMapLegend(legend)
 
         updateMapLegend(legend);
