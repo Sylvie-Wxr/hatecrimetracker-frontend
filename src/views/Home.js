@@ -342,27 +342,38 @@ const Home = () => {
                     </Col>
                   </Row>
                 </FormGroup>
-                <IncidentChart_AM
-                  color={colors.primary.main}
-                  chart_data={incidentTimeSeries}
-                  state={selectedState}
-                  isFirstLoadData={isFirstLoadData}
-                />
-                <div className="floating-social-media">
-                  <SocialMedia
-                    size={32}
-                    bgStyle={{ fill: "#1f2125" }}
-                    iconFillColor={"#FEF753"}
-                    isShare={false}
-                  />
-                </div>
-                <IncidentMap
-                  mapData={incidentAggregated}
-                  selectedState={selectedState}
-                  lang={i18n.language}
-                  showPer10KAsian={isShowPer10kAsian}
-                  stateToggled={stateToggled}
-                />
+                {/* Trend Label + Chart */}
+                <Row className="align-items-start mb-2">
+                  <Col xs="2" className="text-end pe-2">
+                    <div className="geo-label">Geography</div>
+                  </Col>
+                  <Col>
+                    <IncidentMap
+                      mapData={incidentAggregated}
+                      selectedState={selectedState}
+                      lang={i18n.language}
+                      showPer10KAsian={isShowPer10kAsian}
+                      stateToggled={stateToggled}
+                    />
+                  </Col>
+                </Row>
+                <Row className="align-items-start mb-2">
+                  <Col xs="2" className="text-end pe-2">
+                    <div className="trend-label">Trend</div>
+                  </Col>
+                  <Col>
+                    <IncidentChart_AM
+                      color={colors.primary.main}
+                      chart_data={incidentTimeSeries}
+                      state={selectedState}
+                      isFirstLoadData={isFirstLoadData}
+                    />
+                  </Col>
+                </Row>
+
+                {/* Geography Label + Map */}
+                
+
                 <IncidentCountTable
                   title={"Incident Count by State"}
                   data={incidentAggregated}
