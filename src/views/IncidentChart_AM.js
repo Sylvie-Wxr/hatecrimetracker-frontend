@@ -7,6 +7,7 @@ import React, { useEffect, useLayoutEffect, useState, useContext } from "react";
 import { stateFullName } from "../utility/Utils";
 import { useTranslation } from "react-i18next";
 import { Trans } from "react-i18next";
+import "./IncidentChart_AM.css";
 import { th } from "date-fns/locale";
 
 am4core.useTheme(am4themes_animated);
@@ -22,8 +23,7 @@ const togDaily = false,
 const IncidentChart_AM = ({ color, chart_data, state, isFirstLoadData }) => {
   const { t } = useTranslation();
   const [totalCases, setTotalCases] = useState(0);
-  let toggleDaily = togDaily,
-    toggleMonthly = togMonthly;
+  const [viewMode, setViewMode] = useState("monthly");
 
   useLayoutEffect(() => {
     let total = 0;
@@ -59,11 +59,6 @@ const IncidentChart_AM = ({ color, chart_data, state, isFirstLoadData }) => {
     valueAxis.renderer.grid.template.strokeOpacity = 0.2;
     valueAxis.renderer.grid.template.strokeDasharray = "3,3";
 
-    // Setting up toolTipText
-    let toolTipText = `{key}
-        [bold]Monthly Cases: {monthly_cases}
-        [bold]Daily Cases: {value}`;
-
     // Create series (the data sets)
     let series1 = chart.series.push(new am4charts.LineSeries());
     series1.dataFields.valueY = "monthly_cases";
@@ -87,25 +82,29 @@ const IncidentChart_AM = ({ color, chart_data, state, isFirstLoadData }) => {
     series2.stroke = am4core.color(color);
     series2.columns.template.width = am4core.percent(80);
 
+    // Show and hide based on viewMode
+    series1.hidden = viewMode !== "monthly";
+    series2.hidden = viewMode !== "daily";
+
     // chart cursor on
     chart.cursor = new am4charts.XYCursor();
     chart.cursor.lineX.disabled = false;
     chart.cursor.lineY.disabled = false;
 
     // chart legend
-    chart.legend = new am4charts.Legend();
-    chart.legend.useDefaultMarker = false;
-    let markerTemplate = chart.legend.markers.template;
-    markerTemplate.children.getIndex(0).cornerRadius(0.5, 0.5, 0.5, 0.5);
-    markerTemplate.width = 12;
-    markerTemplate.height = 12;
-    series1.legendSettings.labelText = "Monthly Cases";
-    series2.legendSettings.labelText = "Daily Cases";
+    // chart.legend = new am4charts.Legend();
+    // chart.legend.useDefaultMarker = false;
+    // let markerTemplate = chart.legend.markers.template;
+    // markerTemplate.children.getIndex(0).cornerRadius(0.5, 0.5, 0.5, 0.5);
+    // markerTemplate.width = 12;
+    // markerTemplate.height = 12;
+    // series1.legendSettings.labelText = "Monthly Cases";
+    // series2.legendSettings.labelText = "Daily Cases";
 
     return () => {
       chart.dispose();
     };
-  }, [chart_data]);
+  }, [chart_data, viewMode]);
 
   return (
     <div>
@@ -145,6 +144,46 @@ const IncidentChart_AM = ({ color, chart_data, state, isFirstLoadData }) => {
               id="chart_1yaxis"
               style={{ width: "100%", height: "400px" }}
             ></div>
+             </div>
+            <div className="time-range-toggle">
+              <div
+                className="time-option"
+                onClick={() => setViewMode("monthly")}
+               >
+                <div
+                className={`time-circle-outer ${
+                  viewMode === "monthly" ? "active" : ""
+                }`}
+              >
+                {viewMode === "monthly" && <div className="time-circle-inner" />}
+              </div>
+                  <span
+                className={
+                  viewMode === "monthly" ? "active-label" : "inactive-label"
+                }
+              >
+                Monthly
+              </span>
+            </div>
+            <div
+              className="time-option"
+              onClick={() => setViewMode("daily")}
+            >
+              <div
+                className={`time-circle-outer ${
+                  viewMode === "daily" ? "active" : ""
+                }`}
+              >
+                {viewMode === "daily" && <div className="time-circle-inner" />}
+              </div>
+              <span
+                className={
+                  viewMode === "daily" ? "active-label" : "inactive-label"
+                }
+              >
+                Daily
+              </span>
+            </div>
           </div>
         </CardBody>
       </Card>
