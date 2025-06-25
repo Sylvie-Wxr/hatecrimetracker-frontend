@@ -373,10 +373,16 @@ const Home = () => {
                     />
                   </Col>
                 </Row>
+                 <div className="floating-social-media">
+                  <SocialMedia
+                    size={32}
+                    bgStyle={{ fill: "#1f2125" }}
+                    iconFillColor={"#FEF753"}
+                    isShare={false}
+                  />
+                </div>
 
                 {/* Geography Label + Map */}
-                
-
                 <IncidentCountTable
                   title={"Incident Count by State"}
                   data={incidentAggregated}
