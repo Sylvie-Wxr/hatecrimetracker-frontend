@@ -35,6 +35,7 @@ import SocialMediaPopup from "./components/social-media-pop-up";
 import ReportIncident from "./components/report-incident";
 import "../assets/scss/charts/recharts.scss";
 import IncidentChart_D3 from "./IncidentChart_D3";
+import SelfReportToggle from "./components/self-report-toggle/SelfReportToggle";
 import dayjs from "dayjs";
 
 const Home = () => {
@@ -375,6 +376,10 @@ const Home = () => {
                   state={selectedState}
                   isFirstLoadData={isFirstLoadData}
                 /> */}
+               <SelfReportToggle
+                isOn={showSelfReport}
+                handleToggle={setShowSelfReport}
+              />
                 <IncidentChart_D3
                   chart_data={chartData}
                   viewMode={viewMode}
