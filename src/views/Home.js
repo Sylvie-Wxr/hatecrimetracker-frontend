@@ -112,10 +112,16 @@ const Home = () => {
       // current only handle news
       new_stats.push({
         key: strDate,
-        daily_cases: dailyStat ? (dailyStat.news > 0 ? dailyStat.news : null) : null,
+        daily_cases:
+        dailyStat && (dailyStat.news > 0 || dailyStat.self_report > 0)
+          ? dailyStat.news + dailyStat.self_report
+          : null,
         daily_news: dailyStat?.news || 0,
         daily_self_report: dailyStat?.self_report || 0,
-        monthly_cases: monthlyData.news > 0 ? monthlyData.news : null,
+        monthly_cases:
+        (monthlyData.news > 0 || monthlyData.self_report > 0)
+          ? monthlyData.news + monthlyData.self_report
+          : null,
         monthly_news: monthlyData.news,
         monthly_self_report: monthlyData.self_report,
       });

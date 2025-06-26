@@ -8,7 +8,7 @@ const IncidentChart_D3 = ({ chart_data,
     viewMode, 
     setViewMode,
     showSelfReport,
-    setSelfReport,
+    setShowSelfReport,
     state,
     isFirstLoadData }) => {
   const chartRef = useRef();
@@ -114,14 +114,21 @@ const IncidentChart_D3 = ({ chart_data,
       tooltip
         .style("display", "block")
         .style("background", "#283046")
-        .html(`
-          <strong>${
-            viewMode === "monthly"
-              ? dayjs(d.data.key).format("MMM YYYY") // e.g. "Apr 2025"
-              : dayjs(d.data.key).format("YYYY-MM-DD")
-          }</strong><br/>
-          ${viewMode === "monthly" ? "Monthly" : "Daily"} Cases: ${d.data.news}
-        `);
+        .html(() => {
+      const dateStr = viewMode === "monthly"
+        ? dayjs(d.data.key).format("MMM YYYY")
+        : dayjs(d.data.key).format("YYYY-MM-DD");
+
+      let html = `<strong>${dateStr}</strong><br/>`;
+      html += `News Reports: ${d.data.news}`;
+
+      if (showSelfReport && d.data.self_report !== undefined) {
+        html += `<br/>Self-Reported: ${d.data.self_report}`;
+      }
+
+  return html;
+});
+
       })
       .on("mousemove", function (event) {
         tooltip
@@ -137,6 +144,10 @@ const IncidentChart_D3 = ({ chart_data,
   return (
     <Card>
         <CardHeader>
+          <button onClick={() => setShowSelfReport(!showSelfReport)}>
+          {showSelfReport ? "Hide Self-Report" : "Show Self-Report"}
+        </button>
+
         </CardHeader>
         <CardBody>
         <div className="recharts-wrapper">
