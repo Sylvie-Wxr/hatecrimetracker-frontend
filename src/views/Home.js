@@ -453,7 +453,7 @@ const Home = () => {
                 {/* <CardHeader>
                             <CardTitle>Hate Crime Incidents</CardTitle>
                         </CardHeader> */}
-                <CardBody>
+                <CardBody className="incident-card-body">
                   <IncidentList data={incidents} />
                 </CardBody>
               </Card>

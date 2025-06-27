@@ -140,6 +140,9 @@
     padding: 1.2rem 1rem 1rem 1rem;
 }
 
+.incident-card-body {
+  margin-top: -1.5rem;
+}
 
 @media (max-width: 786px) {
     .floating-button-top {
