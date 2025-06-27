@@ -414,6 +414,14 @@ const Home = () => {
                 isOn={showSelfReport}
                 handleToggle={setShowSelfReport}
               />
+                <IncidentMap
+                  mapData={incidentAggregated}
+                  selectedState={selectedState}
+                  lang={i18n.language}
+                  showPer10KAsian={isShowPer10kAsian}
+                  showSelfReport={showSelfReport}  
+                  stateToggled={stateToggled}
+                />
                 <IncidentChart_D3
                   chart_data={chartData}
                   viewMode={viewMode}
@@ -431,14 +439,7 @@ const Home = () => {
                     isShare={false}
                   />
                 </div>
-                <IncidentMap
-                  mapData={incidentAggregated}
-                  selectedState={selectedState}
-                  lang={i18n.language}
-                  showPer10KAsian={isShowPer10kAsian}
-                  showSelfReport={showSelfReport}  
-                  stateToggled={stateToggled}
-                />
+
                 <IncidentCountTable
                   title={"Incident Count by State"}
                   data={incidentAggregated}
