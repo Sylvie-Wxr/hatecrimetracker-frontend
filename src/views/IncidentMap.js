@@ -56,6 +56,7 @@ const IncidentMap = (props) => {
 
 
     const updateMap = (mapStatistics) => {
+        console.log("🔍 Map stats received:", mapStatistics); 
         if (!mapPolygonSeries) return
 
         //calc max value from the input map data
@@ -93,7 +94,7 @@ const IncidentMap = (props) => {
     useEffect(() => {
         updateMap(props.mapData)
         updateMapLegend(mapLegend);
-    }, [props.mapData, props.lang, props.showPer10KAsian])
+    }, [props.mapData, props.lang, props.showPer10KAsian, props.showSelfReport])
 
     useEffect(() => {
         setSelectedState(props.selectedState)

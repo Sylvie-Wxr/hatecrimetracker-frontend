@@ -132,12 +132,12 @@ const Home = () => {
     return new_stats;
   };
 
-  const loadData = (updateMap = false) => {
+  const loadData = (updateMap = false, includeSelfReport = false) => {
     if (dateRange?.length != 2) return;
 
     setLoading(true);
     incidentsService
-      .getIncidents(dateRange[0], dateRange[1], selectedState, selectedLangCode, null, "news")
+      .getIncidents(dateRange[0], dateRange[1], selectedState, selectedLangCode, null, includeSelfReport ? "self_report" : "news")
       .then((incidents) => setIncidents(incidents));
     incidentsService
       .getStats(dateRange[0], dateRange[1], selectedState)
@@ -165,7 +165,9 @@ const Home = () => {
         if (updateMap) {
           const processedTotal = {};
           Object.entries(totalStats).forEach(([state, data]) => {
-            processedTotal[state] = data?.news || 0;
+            const news = data?.news || 0;
+            const selfReport = data?.self_report || 0;
+            processedTotal[state] = includeSelfReport ? news + selfReport : news;
         });
         setIncidentAggregated(processedTotal);
       }
@@ -235,9 +237,13 @@ const Home = () => {
   }, [selectedState, selectedLangCode]);
   //update both incidents and map
   useEffect(() => {
-    loadData(true);
+    loadData(true, showSelfReport);
     saveHistory();
   }, [dateRange]);
+
+  useEffect(() => {
+  loadData(true, showSelfReport);
+}, [showSelfReport]);
 
   useEffect(() => {
     const resizeW = () => changeDeviceSize(window.innerWidth);
@@ -370,12 +376,6 @@ const Home = () => {
                     </Col>
                   </Row>
                 </FormGroup>
-                {/* <IncidentChart_AM
-                  color={colors.primary.main}
-                  chart_data={incidentTimeSeries}
-                  state={selectedState}
-                  isFirstLoadData={isFirstLoadData}
-                /> */}
                <SelfReportToggle
                 isOn={showSelfReport}
                 handleToggle={setShowSelfReport}
@@ -402,6 +402,7 @@ const Home = () => {
                   selectedState={selectedState}
                   lang={i18n.language}
                   showPer10KAsian={isShowPer10kAsian}
+                  showSelfReport={showSelfReport}  
                   stateToggled={stateToggled}
                 />
                 <IncidentCountTable
@@ -409,6 +410,7 @@ const Home = () => {
                   data={incidentAggregated}
                   selectedState={selectedState}
                   stateToggled={stateToggled}
+                  showSelfReport={showSelfReport}
                 />
               </div>
             </Col>
