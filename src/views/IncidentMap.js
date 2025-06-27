@@ -56,7 +56,6 @@ const IncidentMap = (props) => {
 
 
     const updateMap = (mapStatistics) => {
-        console.log("🔍 Map stats received:", mapStatistics); 
         if (!mapPolygonSeries) return
 
         //calc max value from the input map data

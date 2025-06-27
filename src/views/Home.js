@@ -150,7 +150,15 @@ const Home = () => {
       setCachedNewsIncidents(newsData);
       setCachedSelfReportIncidents(selfReportData);
       setCachedStatsData(statsData);
-      setIncidents(showSelfReport ? [...newsData, ...selfReportData] : newsData);
+      // Set incidents based on current showSelfReport state
+      if (showSelfReport) {
+        // Combine and sort by date (most recent first)
+        const combinedIncidents = [...newsData, ...selfReportData]
+          .sort((a, b) => moment(b.incident_time).valueOf() - moment(a.incident_time).valueOf());
+        setIncidents(combinedIncidents);
+      } else {
+        setIncidents(newsData);
+      }
 
       // Process stats
       const dailyStats = statsData.daily_statistics || {};
@@ -225,7 +233,14 @@ const Home = () => {
 
   useEffect(() => {
     // Update incidents list from cached data
-    setIncidents(showSelfReport ? [...cachedNewsIncidents, ...cachedSelfReportIncidents] : cachedNewsIncidents);
+    if (showSelfReport) {
+      // Combine and sort by date (most recent first)
+      const combinedIncidents = [...cachedNewsIncidents, ...cachedSelfReportIncidents]
+        .sort((a, b) => moment(b.incident_time).valueOf() - moment(a.incident_time).valueOf());
+      setIncidents(combinedIncidents);
+    } else {
+      setIncidents(cachedNewsIncidents);
+    }
     
     // Update aggregated state view from cached stats data (no API call needed)
     if (cachedStatsData?.insights) {
