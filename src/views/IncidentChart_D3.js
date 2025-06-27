@@ -99,7 +99,7 @@ const IncidentChart_D3 = ({ chart_data,
         if (d.key === "news") {
           return viewMode === "monthly" ? "#514f81" : "#FEF753"; // purple for monthly, yellow for daily
         }
-        if (d.key === "self_report") return "#cc804d";
+        if (d.key === "self_report") return "#ffab91";
         return "#ccc";
         })
       .style("stroke", "none") 

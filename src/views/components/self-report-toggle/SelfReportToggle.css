@@ -20,7 +20,7 @@
 }
 
 .toggle-button.on {
-  border-color: #f8ac53;
+  border-color: #ffab91;
 }
 
 .switch-circle {
@@ -33,7 +33,7 @@
 }
 
 .circle-on {
-  background-color: #f8ac53;
+  background-color: #ffab91;
   right: 4px;
 }
 
@@ -49,7 +49,7 @@
 }
 
 .text-on {
-  color: #f8ac53;
+  color: #ffab91;
   text-align: left;
   left: 7px;
 }
@@ -71,10 +71,10 @@
 }
 
 .label-on {
-  color: #f8ac53; /* orange when ON */
+  color: #ffab91;
 }
 
 .label-off {
-  color: white; /* white when OFF */
+  color: white;
 }
 

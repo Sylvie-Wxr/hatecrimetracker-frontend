@@ -56,6 +56,9 @@ const Home = () => {
   const support_languages = [];
   const [viewMode, setViewMode] = useState("monthly");
   const [showSelfReport, setShowSelfReport] = useState(false);
+  const [cachedNewsIncidents, setCachedNewsIncidents] = useState([]);
+  const [cachedSelfReportIncidents, setCachedSelfReportIncidents] = useState([]);
+  const [cachedStatsData, setCachedStatsData] = useState(null);
 
   Object.entries(SUPPORTED_LANGUAGES).forEach(([lang_code, lang_name]) => {
     support_languages.push({
@@ -132,48 +135,52 @@ const Home = () => {
     return new_stats;
   };
 
-  const loadData = (updateMap = false, includeSelfReport = false) => {
-    if (dateRange?.length != 2) return;
+  const loadData = async (updateMap = false) => {
+    if (dateRange?.length !== 2) return;
 
     setLoading(true);
-    incidentsService
-      .getIncidents(dateRange[0], dateRange[1], selectedState, selectedLangCode, null, includeSelfReport ? "self_report" : "news")
-      .then((incidents) => setIncidents(incidents));
-    incidentsService
-      .getStats(dateRange[0], dateRange[1], selectedState)
-      .then((response) => {
-        // Defensive check for malformed response
-        if (!response || typeof response !== "object") {
-          setLoading(false);
-          return;
-        }
-        
-        // Handle new field names
-        const dailyStats = response.daily_statistics || {};
-        const monthlyStats = response.monthly_statistics || {};
-        const totalStats = response.insights || {};
-        
-        const timeSeries = buildTimeSeries(
-          dailyStats,
-          dateRange[0],
-          dateRange[1],
-          monthlyStats
-        );
 
-        setIncidentTimeSeries(timeSeries); 
-        
-        if (updateMap) {
-          const processedTotal = {};
-          Object.entries(totalStats).forEach(([state, data]) => {
-            const news = data?.news || 0;
-            const selfReport = data?.self_report || 0;
-            processedTotal[state] = includeSelfReport ? news + selfReport : news;
+    try {
+      const [newsData, selfReportData, statsData] = await Promise.all([
+        incidentsService.getIncidents(dateRange[0], dateRange[1], selectedState, selectedLangCode, null, "news"),
+        incidentsService.getIncidents(dateRange[0], dateRange[1], selectedState, selectedLangCode, null, "self_report"),
+        incidentsService.getStats(dateRange[0], dateRange[1], selectedState),
+      ]);
+
+      setCachedNewsIncidents(newsData);
+      setCachedSelfReportIncidents(selfReportData);
+      setCachedStatsData(statsData);
+      setIncidents(showSelfReport ? [...newsData, ...selfReportData] : newsData);
+
+      // Process stats
+      const dailyStats = statsData.daily_statistics || {};
+      const monthlyStats = statsData.monthly_statistics || {};
+      const totalStats = statsData.insights || {};
+
+      const timeSeries = buildTimeSeries(
+        dailyStats,
+        dateRange[0],
+        dateRange[1],
+        monthlyStats
+      );
+      setIncidentTimeSeries(timeSeries);
+
+      if (updateMap) {
+        const processedTotal = {};
+        Object.entries(totalStats).forEach(([state, data]) => {
+          const news = data?.news || 0;
+          const selfReport = data?.self_report || 0;
+          processedTotal[state] = showSelfReport ? news + selfReport : news;
         });
         setIncidentAggregated(processedTotal);
       }
-        setLoading(false);
-        setIsFirstLoadData(false);
-      });
+
+      setIsFirstLoadData(false);
+    } catch (err) {
+      console.error("Failed to load data", err);
+    }
+
+    setLoading(false);
   };
 
   const generateUrl = (from, to, state, lang) => {
@@ -217,6 +224,22 @@ const Home = () => {
   };
 
   useEffect(() => {
+    // Update incidents list from cached data
+    setIncidents(showSelfReport ? [...cachedNewsIncidents, ...cachedSelfReportIncidents] : cachedNewsIncidents);
+    
+    // Update aggregated state view from cached stats data (no API call needed)
+    if (cachedStatsData?.insights) {
+      const processedTotal = {};
+      Object.entries(cachedStatsData.insights).forEach(([state, data]) => {
+        const news = data?.news || 0;
+        const selfReport = data?.self_report || 0;
+        processedTotal[state] = showSelfReport ? news + selfReport : news;
+      });
+      setIncidentAggregated(processedTotal);
+    }
+  }, [showSelfReport, cachedNewsIncidents, cachedSelfReportIncidents, cachedStatsData]);
+
+  useEffect(() => {
     if (isParameterChanged()) {
       const defaultDateRange = isObjEmpty(searchParams.get("from"))
         ? [moment().subtract(1, "years").toDate(), new Date()]
@@ -237,13 +260,9 @@ const Home = () => {
   }, [selectedState, selectedLangCode]);
   //update both incidents and map
   useEffect(() => {
-    loadData(true, showSelfReport);
+    loadData(true);
     saveHistory();
   }, [dateRange]);
-
-  useEffect(() => {
-  loadData(true, showSelfReport);
-}, [showSelfReport]);
 
   useEffect(() => {
     const resizeW = () => changeDeviceSize(window.innerWidth);
