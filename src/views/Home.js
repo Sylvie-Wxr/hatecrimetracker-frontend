@@ -81,6 +81,7 @@ const Home = () => {
   const [incidentAggregated, setIncidentAggregated] = useState([]);
   const [loading, setLoading] = useState(false);
   const [isShare, setIsShare] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const setSelectedLang = (lang_code) => {
     setCookie("lang", lang_code);
     setSelectedLangCode(lang_code);
@@ -282,7 +283,7 @@ const Home = () => {
 
  return (
     <>
-      {deviceSize < 768 && (
+      {deviceSize < 786 && (
         <>
           <div className="wrapper-floatting-button">
             <div
@@ -319,30 +320,82 @@ const Home = () => {
                 </p>
                </div>
 
-               <div className="controls-section">                      
-                  <ReportIncident />
-                  <a
-                    href="https://docs.google.com/forms/d/1pWp89Y6EThMHml1jYGkDj5J0YFO74K_37sIlOHKkWo0"
-                    target="_blank"
-                    className="contact_us"
-                  >
-                    {t("contact_us")}
-                  </a>
-                  <SelectPicker
-                    data={support_languages}
-                    searchable={false}
-                    cleanable={false}
-                    defaultValue={selectedLangCode}
-                    style={{ width: 120}}
-                    className={"rs-theme-dark no-border-lang-picker"}
-                    onChange={(value) => setSelectedLang(value)}
-                  />
-                </div>
+               {deviceSize > 786 ? (
+                 <div className="controls-section">                      
+                   <ReportIncident />
+                   <a
+                     href="https://docs.google.com/forms/d/1pWp89Y6EThMHml1jYGkDj5J0YFO74K_37sIlOHKkWo0"
+                     target="_blank"
+                     className="contact_us"
+                   >
+                     {t("contact_us")}
+                   </a>
+                   <SelectPicker
+                     data={support_languages}
+                     searchable={false}
+                     cleanable={false}
+                     defaultValue={selectedLangCode}
+                     style={{ width: 120}}
+                     className={"rs-theme-dark no-border-lang-picker"}
+                     onChange={(value) => setSelectedLang(value)}
+                   />
+                 </div>
+               ) : (
+                 <button
+                   className="hamburger-button"
+                   aria-label="Open menu"
+                   onClick={() => setIsMobileMenuOpen(true)}
+                 >
+                   {/* simple hamburger icon */}
+                   <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                     <path d="M3 6h18" stroke="#ffffff" strokeWidth="2" strokeLinecap="round"/>
+                     <path d="M3 12h18" stroke="#ffffff" strokeWidth="2" strokeLinecap="round"/>
+                     <path d="M3 18h18" stroke="#ffffff" strokeWidth="2" strokeLinecap="round"/>
+                   </svg>
+                 </button>
+               )}
             </div>
             </div> 
-         </div>
 
-     
+            {isMobileMenuOpen && deviceSize <= 786 && (
+              <div className="mobile-menu-backdrop" onClick={() => setIsMobileMenuOpen(false)}>
+                <div className="mobile-menu" onClick={(e) => e.stopPropagation()}>
+                  <button className="mobile-menu-close" aria-label="Close menu" onClick={() => setIsMobileMenuOpen(false)}>
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M6 6l12 12M18 6L6 18" stroke="#ffffff" strokeWidth="2" strokeLinecap="round"/>
+                    </svg>
+                  </button>
+                  <div className="mobile-menu-content">
+                    <div className="mobile-menu-item">
+                      <ReportIncident />
+                    </div>
+                    <div className="mobile-menu-item">
+                      <a
+                        href="https://docs.google.com/forms/d/1pWp89Y6EThMHml1jYGkDj5J0YFO74K_37sIlOHKkWo0"
+                        target="_blank"
+                        className="contact_us"
+                      >
+                        {t("contact_us")}
+                      </a>
+                    </div>
+                    <div className="mobile-menu-item mobile-menu-lang">
+                      <SelectPicker
+                        data={support_languages}
+                        searchable={false}
+                        cleanable={false}
+                        defaultValue={selectedLangCode}
+                        style={{ width: 160}}
+                        className={"rs-theme-dark no-border-lang-picker"}
+                        onChange={(value) => setSelectedLang(value)}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+           </div>
+
+         
           <Row className="match-height">
             <Col xl="8" lg="6" md="12" className="left-panel">
               <div className="left-panel-wrapper">
@@ -416,7 +469,24 @@ const Home = () => {
                     <div id="map-legend-mobile" className="map-legend-mobile" />
                   </div>
                 </div>
-          
+                
+                {/* <Row>
+                  <Col xs="12" md="2">
+                  <div className="trend-label-container">
+                    <div className="trend-label">Trend</div>
+                    <div id="chart-legend-container" className="chart-legend mt-2" />
+                  </div>
+                  </Col>
+                  <Col xs="12" md="10">
+                    <IncidentChartD3
+                    rawTimeSeriesData={incidentTimeSeries}
+                    showSelfReport={showSelfReport}
+                    state={selectedState}
+                    isFirstLoadData={isFirstLoadData}
+                  />
+                  </Col>
+                </Row> */}
+
                 <div className="chart-section">
                   {/* Mobile: Trend title and TimeToggle in same line */}
                   <div className="mobile-chart-header">
@@ -479,7 +549,7 @@ const Home = () => {
                   {t("copyright")} &copy; {new Date().getFullYear()}{" "}
                   <a href="https://hatecrimetracker.1thing.org">
                     {" "}
-                    {t("website.name")}{" "}
+                    {t("website.name")} {" "}
                   </a>
                 </Col>
                 <Col sm={{ size: "auto", offset: 1 }}>

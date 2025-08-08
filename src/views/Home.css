@@ -22,14 +22,22 @@
   padding-left: 0 !important;
   padding-right: 0 !important;
   justify-content: space-between;
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
 }
 
 .title-section {
   margin-right: auto;
+  flex: 1 1 auto; 
+  min-width: 0;  
 }
 
 .title {
   font-size: clamp(1rem, 2.5vw, 2rem);
+  white-space: nowrap; 
+  overflow: hidden;
+  text-overflow: ellipsis; 
 }
 
 .controls-section {
@@ -38,6 +46,85 @@
   gap: clamp(1rem, 3vw, 2rem);
   margin-right: 2rem;
   flex-shrink: 0;
+}
+
+/* Hamburger button */
+.hamburger-button {
+  display: inline-flex;
+  background: transparent;
+  border: none;
+  padding: 0.25rem 0.75rem;
+  margin-left: 0.5rem;
+  margin-right: 0.75rem;
+  flex: 0 0 auto;
+}
+
+/* Mobile menu overlay */
+.mobile-menu-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  z-index: 2000;
+}
+
+.mobile-menu {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: min(72vw, 320px);
+  height: 100vh;
+  background: #1A1D24;
+  box-shadow: -8px 0 24px rgba(0,0,0,0.5);
+  padding: 2rem 1.25rem 1.25rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  z-index: 2100;
+  overflow: visible;
+}
+
+.mobile-menu-close {
+  background: transparent;
+  border: none;
+  align-self: flex-end;
+}
+
+.mobile-menu-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  margin-top: 0.5rem;
+}
+
+.mobile-menu-item {
+  display: flex;
+  align-items: center;
+  overflow: visible;
+}
+
+/* Ensure RSuite dropdowns render above the panel */
+.mobile-menu :global(.rs-picker-popup),
+.mobile-menu .rs-picker-popup,
+.mobile-menu :global(.rs-anim-in) {
+  z-index: 2200 !important;
+}
+
+/* Global safeguard: make all RSuite picker popups stack above overlays */
+.rs-picker-popup,
+.rs-picker-select-menu,
+.rs-picker-date-menu,
+.rs-picker-daterange-menu {
+  z-index: 3000 !important;
+}
+
+.mobile-menu-item .contact_us {
+  font-size: inherit;
+  margin-left: 0.5rem;
+}
+
+.mobile-menu-lang {
+  display: flex;
+  align-items: center;
+  margin-left: -0.2rem;
 }
 
 .right-controls {
@@ -115,7 +202,6 @@
   gap: 1rem;
 }
 
-
 .chart-content {
   display: grid;
   grid-template-columns: 160px 1fr;
@@ -143,7 +229,6 @@
   color: white;
   margin: 0;
 }
-
 
 .wrapper-floatting-button {
   position: fixed;
@@ -228,7 +313,6 @@
   /* Default margin - will be overridden on mobile */
 }
 
-
 .behind-relative {
   position: relative;
   z-index: 1;
@@ -263,7 +347,6 @@
   .chart-section .mobile-legend-wrapper {
     margin-left: 3.5rem;
   }
-
 
   .desktop-label-title {
     display: none;
@@ -409,10 +492,38 @@
   .floating-button-bottom {
     top: 33%;
   }
+
+  /* Fix navbar title size when hamburger is shown */
+  .navbar .title {
+    font-size: 20px !important;
+  }
 }
 
-/* Small Mobile: Under 768px */
-@media (max-width: 768px) {
+/* Ultra small phones: Under 408px */
+@media (max-width: 408px) {
+  .navbar .title {
+    font-size: 16px !important;
+  }
+}
+
+
+@media (max-width: 360px) {
+  .navbar .title {
+    font-size: 14px !important;
+  }
+}
+
+@media (max-width: 786px) {
+  .controls-section { display: none; }
+  .hamburger-button { display: inline-flex; }
+}
+
+@media (min-width: 787px) {
+  .hamburger-button { display: none; }
+}
+
+/* Small Mobile: Under 786px */
+@media (max-width: 786px) {
   .floating-social-media {
     display: none;
   }
