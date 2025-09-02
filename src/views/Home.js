@@ -1,5 +1,7 @@
 import UILoader from "./components/ui-loader";
-import logo from "../assets/images/logo/logo.png";
+import logo from "../assets/images/logo/logo.png"; // kept for other uses
+import TopNavbar from "./components/navbar/TopNavbar";
+import MobileMenu from "./components/navbar/MobileMenu";
 import moment from "moment";
 import { useContext, useEffect, useState } from "react";
 import {
@@ -310,90 +312,26 @@ const Home = () => {
       )}
       <Head />
       <UILoader blocking={loading}>
-        <div>
+        
           <div className="header">
-            <div className="navbar">
-               <div className="title-section">
-                <p className="title">
-                  <img src={logo} alt="logo" className="logo" />{" "}
-                  {t("website.name")}
-                </p>
-               </div>
+            <TopNavbar
+              deviceSize={deviceSize}
+              selectedLangCode={selectedLangCode}
+              supportLanguages={support_languages}
+              setSelectedLang={setSelectedLang}
+              t={t}
+              onOpenMenu={() => setIsMobileMenuOpen(true)}
+            />
+          </div>
 
-               {deviceSize > 786 ? (
-                 <div className="controls-section">                      
-                   <ReportIncident />
-                   <a
-                     href="https://docs.google.com/forms/d/1pWp89Y6EThMHml1jYGkDj5J0YFO74K_37sIlOHKkWo0"
-                     target="_blank"
-                     className="contact_us"
-                   >
-                     {t("contact_us")}
-                   </a>
-                   <SelectPicker
-                     data={support_languages}
-                     searchable={false}
-                     cleanable={false}
-                     defaultValue={selectedLangCode}
-                     style={{ width: 120}}
-                     className={"rs-theme-dark no-border-lang-picker"}
-                     onChange={(value) => setSelectedLang(value)}
-                   />
-                 </div>
-               ) : (
-                 <button
-                   className="hamburger-button"
-                   aria-label="Open menu"
-                   onClick={() => setIsMobileMenuOpen(true)}
-                 >
-                   {/* simple hamburger icon */}
-                   <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                     <path d="M3 6h18" stroke="#ffffff" strokeWidth="2" strokeLinecap="round"/>
-                     <path d="M3 12h18" stroke="#ffffff" strokeWidth="2" strokeLinecap="round"/>
-                     <path d="M3 18h18" stroke="#ffffff" strokeWidth="2" strokeLinecap="round"/>
-                   </svg>
-                 </button>
-               )}
-            </div>
-            </div> 
-
-            {isMobileMenuOpen && deviceSize <= 786 && (
-              <div className="mobile-menu-backdrop" onClick={() => setIsMobileMenuOpen(false)}>
-                <div className="mobile-menu" onClick={(e) => e.stopPropagation()}>
-                  <button className="mobile-menu-close" aria-label="Close menu" onClick={() => setIsMobileMenuOpen(false)}>
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M6 6l12 12M18 6L6 18" stroke="#ffffff" strokeWidth="2" strokeLinecap="round"/>
-                    </svg>
-                  </button>
-                  <div className="mobile-menu-content">
-                    <div className="mobile-menu-item">
-                      <ReportIncident />
-                    </div>
-                    <div className="mobile-menu-item">
-                      <a
-                        href="https://docs.google.com/forms/d/1pWp89Y6EThMHml1jYGkDj5J0YFO74K_37sIlOHKkWo0"
-                        target="_blank"
-                        className="contact_us"
-                      >
-                        {t("contact_us")}
-                      </a>
-                    </div>
-                    <div className="mobile-menu-item mobile-menu-lang">
-                      <SelectPicker
-                        data={support_languages}
-                        searchable={false}
-                        cleanable={false}
-                        defaultValue={selectedLangCode}
-                        style={{ width: 160}}
-                        className={"rs-theme-dark no-border-lang-picker"}
-                        onChange={(value) => setSelectedLang(value)}
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-           </div>
+          <MobileMenu
+            isOpen={isMobileMenuOpen && deviceSize <= 786}
+            onClose={() => setIsMobileMenuOpen(false)}
+            supportLanguages={support_languages}
+            selectedLangCode={selectedLangCode}
+            setSelectedLang={setSelectedLang}
+            t={t}
+          />
 
          
           <Row className="match-height">

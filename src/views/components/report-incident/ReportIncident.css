@@ -42,7 +42,7 @@
   cursor: pointer;
 }
 
-.modal-title {
+.modal-content .modal-title {
   margin: 0 0 0.5rem;
   color: #fff;
   font-size: 1.5rem;
